@@ -12,7 +12,7 @@ let server = http.createServer((req, res) => {
         })
     }
     res.writeHead(200,
-        // Toggle to display behavior when server properly sets connection header
+        // Toggle to display behavior when server properly sets connection header in its reply
         // {"Connection": "Close"},
     )
     res.end()

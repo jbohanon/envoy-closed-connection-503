@@ -41,6 +41,14 @@
                       name: local_route
                       virtual_hosts:
                         - name: backend
+                          # Toggle below block to enable injecting Connection header to upstream
+                          # This instructs the upstream server to not utilize keep-alive (https://github.com/nodejs/node/blob/main/lib/_http_outgoing.js#L590-L597)
+                          # This appears to work across the board, but may incur some performance penalty if
+                          # the upstream server was otherwise reusing connections
+                          request_headers_to_add:
+                            - header:
+                                key: "Connection"
+                                value: "Close"
                           domains:
                             - "*"
                           routes:
@@ -48,6 +56,13 @@
                                 prefix: "/"
                               route:
                                 cluster: test-node-server
+                              # Toggle below block to enable retries on reset
+                              # This appears to help intermittently, particularly in tandem with increased concurrency
+                              # but is not a complete resolution as certain loads such as the one we produce in this
+                              # test can overload Envoy's retry resource manager as seen in the metrics output
+                                # retry_policy:
+                                #   retry_on: reset
+                                #   num_retries: 3
                     http_filters:
                       - name: envoy.filters.http.router
                         typed_config:

@@ -48,7 +48,13 @@ fi
 
 # Run envoy
 echo "running envoy"
-./envoy --config-path ./envoy.yaml --log-level debug 1>./envoy.log 2>&1 &
+# Manipulate the CLI flag to artificially choke concurrency. Because the connections
+# are only reused on the same worker thread, decreasing the number of worker threads
+# can exacerbate the issue without applying additional load. Conversely, increasing
+# concurrency can mitigate the issue since fewer requests are assigned to each thread.
+# However, arbitrarily increasing concurrency is not a solution; generally one worker per
+# hardware thread is recommended (https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/intro/threading_model#arch-overview-threading)
+./envoy --concurrency 10 --config-path ./envoy.yaml --log-level debug 1>./envoy.log 2>&1 &
 
 # Run our test upstream
 echo "running node upstream server"
