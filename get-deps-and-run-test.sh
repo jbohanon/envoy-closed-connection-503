@@ -44,17 +44,21 @@ fi
 ./envoy --config-path ./envoy.yaml --log-level debug 1>./envoy.log 2>&1 &
 
 # Run our test upstream
-./node node-server.js &
-NODE_SERVER_PID=$!
+./node node-server.js 1>./node.log 2>&1 &
 
 # Run our k6 test
 ./k6 run ./k6-proxy-node.js
 
-curl http://localhost:19000/stats -o ./envoy_metrics
-curl http://localhost:19000/clusters -o ./envoy_clusters
-curl http://localhost:19000/routes -o ./envoy_routes
-curl http://localhost:19000/server_info -o ./envoy_server_info
-curl http://localhost:19000/quitquitquit
+# Get envoy data and stop
+curl http://localhost:19000/stats -so ./envoy_metrics
+curl http://localhost:19000/clusters -so ./envoy_clusters
+curl http://localhost:19000/server_info -so ./envoy_server_info
+curl -sX POST http://localhost:19000/quitquitquit
 
-kill -9 $NODE_SERVER_PID
+# Stop our node server
+curl -s http://localhost:4000/quitquitquit
 
+if [[ -n "${CLEANUP}" ]]; then
+    rm envoy envoy.log envoy_clusters envoy_metrics envoy_server_info k6 node node.log
+    rm -rf ./node-v18.16.0-linux-x64
+fi
