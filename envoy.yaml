@@ -45,13 +45,9 @@
                             - "*"
                           routes:
                             - match:
-                                prefix: "/node"
+                                prefix: "/"
                               route:
                                 cluster: test-node-server
-                            - match:
-                                prefix: "/python"
-                              route:
-                                cluster: test-python-server
                     http_filters:
                       - name: envoy.filters.http.router
                         typed_config:
@@ -83,19 +79,6 @@
                         socket_address:
                           address: 127.0.0.1
                           port_value: 4000
-        - name: test-python-server
-          connect_timeout: 0.25s
-          type: strict_dns
-          lb_policy: round_robin
-          load_assignment:
-            cluster_name: test-python-server
-            endpoints:
-              - lb_endpoints:
-                  - endpoint:
-                      address:
-                        socket_address:
-                          address: 127.0.0.1
-                          port_value: 5000
     admin:
       access_log_path: "/dev/null"
       address:

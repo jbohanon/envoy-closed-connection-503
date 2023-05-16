@@ -9,7 +9,7 @@ export const options = {
 
 export default function () {
   const res = http.get(
-    "http://localhost:8082/node"
+    "http://localhost:8082"
   );
   sleep(5);
   check(res, {
